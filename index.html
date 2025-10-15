@@ -924,9 +924,9 @@ const ENEMY_TYPES = [
   {name:'Avocado', hp:100, speed:0.3, reward:15, color:'#27ae60'},
   {name:'Pumpkin', hp:150, speed:0.5, reward:18, color:'#d35400'},
   {name:'Watermelon', hp:200, speed:0.7, reward:10, color:'#c0392b'},
-  {name:'Eggplant', hp:500, speed:0.35, reward:20, color:'#8e44ad'},
-  {name:'Carrot', hp:200, speed:1.8, reward:9, color:'#e67e22'},
-  {name:'Cabbage', hp:1000, speed:0.25, reward:25, color:'#1abc9c'}
+  {name:'Eggplant', hp:1500, speed:0.6, reward:20, color:'#8e44ad'},
+  {name:'Carrot', hp:700, speed:1.8, reward:9, color:'#e67e22'},
+  {name:'Cabbage', hp:3000, speed:0.5, reward:25, color:'#1abc9c'}
 ];
 
 // SUPER ENEMIES - Much stronger
@@ -2287,15 +2287,15 @@ startWaveBtn.addEventListener('click', ()=>{
       case 7: waveComposition = [{type:3, count:10}, {type:1, count:10}]; break;
       case 8: waveComposition = [{type:4, count:7}, {type:5, count:4}]; break;
       case 9: waveComposition = [{type:6, count:15}, {type:2, count:15}]; break;
-      case 10: waveComposition = [{type:7, count:10}, {type:5, count:10}, {type:3, count:15}]; break;
+      case 10: waveComposition = [{type:6, count:15}, {type:5, count:10}, {type:3, count:15}]; break;
       // Pattern continues for waves 11-200
       default:
         if(wave <= 50) {
           const baseType = Math.min(7, Math.floor(wave/7));
           waveComposition = [
             {type: baseType, count: 10 + wave * 2},
-            {type: Math.min(9, baseType + 1), count: 5 + wave},
-            {type: Math.min(9, baseType + 2), count: 3 + Math.floor(wave/2)}
+            {type: Math.min(9, baseType + 1), count: 5 + wave/2},
+            {type: Math.min(9, baseType + 2), count: 3 + Math.floor(wave/3)}
           ];
         } else if(wave <= 100) {
           waveComposition = [
@@ -2709,3 +2709,4 @@ document.addEventListener('keydown', e=>{
 </script>
 </body>
 </html>
+
