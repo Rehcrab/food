@@ -926,7 +926,7 @@ const ENEMY_TYPES = [
   {name:'Watermelon', hp:200, speed:0.7, reward:10, color:'#c0392b'},
   {name:'Eggplant', hp:1500, speed:0.6, reward:20, color:'#8e44ad'},
   {name:'Carrot', hp:700, speed:1.8, reward:9, color:'#e67e22'},
-  {name:'Cabbage', hp:3000, speed:0.5, reward:25, color:'#1abc9c'}
+  {name:'Cabbage', hp: 3000, speed:0.5, reward:25, color:'#1abc9c'}
 ];
 
 // SUPER ENEMIES - Much stronger
@@ -949,7 +949,7 @@ const UPGRADE_DEFS = {
           if(level===5) tower.damage *= 1.5;
           if(level===6) tower.damage *= 3;
         },
-        desc:['+50%','+50%','+40%','+40%','+50% dmg', '+200% dmg']
+        desc:['+50% DMG','+50% DMG','+40% DMG','+40% DMG','+50% dmg DMG', '+200% dmg DMG']
       },
       { costs:[150,300,700,2000,4000,40000],
         apply:(tower,level)=>{
@@ -987,16 +987,16 @@ const UPGRADE_DEFS = {
           if(level===5) tower.damage *= 1.6;
           if(level===5) tower.damage *= 2.5;  
         },
-        desc:['+40%','+40%','+50%','+50%','+60% dmg', '+150% dmg']
+        desc:['+40% DMG','+40% DMG','+50% DMG','+50% DMG','+60% DMG', '+150% DMG']
       },
-      { costs:[120,300,300,1600,3200, 25000],
+      { costs:[120,300,300,1600,3200, 45000],
         apply:(tower,level)=>{ 
           if(level<=6){ 
             tower.fireRate *= (1 - 0.08*level); 
             tower.range += 10*level; 
           } 
         },
-        desc:['faster & +10r','faster & +20r','+30r','+40r','+50r','+60r']
+        desc:['faster +10r','faster +20r','faster +30r','faster +40r','faster +50r','faster +60r']
       },
       { costs:[250,300,1000,2800,5500, 40000],
         apply:(tower,level)=>{ 
@@ -1011,7 +1011,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[300,400,500,3600,7200, 60000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.3*level); },
-        desc:['+30%','+60%','+90%','+120%','+150% dmg', '+180% dmg']
+        desc:['+30% DMG','+60% DMG','+90% DMG','+120% DMG','+150% DMG', '+180% DMG']
       },
       { costs:[200,300,400,2400,4800],
         apply:(tower,level)=>{ if(level<=6) tower.range += 15*level; },
@@ -1026,7 +1026,7 @@ const UPGRADE_DEFS = {
           if(level===5) tower.splashMult=2.0; 
           if(level===6) tower.splashMult=2.8; 
         },
-        desc:['big splash','huge splash','massive','gigantic','colossal','impossible']
+        desc:['big splash','huge splash','massive splash','gigantic splash','colossal splash','too big splash']
       }
     ]
   },
@@ -1035,7 +1035,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[350,500,1300,3800,7500,75000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.3*level); },
-        desc:['+30%','+60%','+90%','+120%','+150% dmg','+180% dmg']
+        desc:['+30% DMG','+60% DMG','+90% DMG','+120% DMG','+150% DMG','+180% DMG']
       },
       { costs:[280,400,800,3200,6400, 60000],
         apply:(tower,level)=>{ 
@@ -1050,7 +1050,7 @@ const UPGRADE_DEFS = {
       },
       { costs:[220,350,700,2600,5200,40000],
         apply:(tower,level)=>{ if(level<=6) tower.fireRate *= (1 - 0.06*level); },
-        desc:['much faster','very fast','extremely','insanely','godly fast','demonic']
+        desc:['much faster','very fast','extremely fast','insanely fast','godly fast','demonic speed']
       }
     ]
   },
@@ -1059,7 +1059,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[180,200,450,2000,4000, 30000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.25*level); },
-        desc:['+25%','+50%','+75%','+100%','+125% dmg','+150% dmg']
+        desc:['+25% DMG','+50% DMG','+75% DMG','+100% DMG','+125% DMG','+150% DMG']
       },
       { costs:[150,200,500,1800,3600, 28000],
         apply:(tower,level)=>{ if(level<=6) tower.range += 12*level; },
@@ -1074,7 +1074,7 @@ const UPGRADE_DEFS = {
           if(level===5){ tower.slow+=0.1; tower.slowDuration+=1; }
           if(level===6) tower.fireRate*=0.3;
         },
-        desc:['slow 2s','3s','4s','5s','6s slow', 'insane attack rate']
+        desc:['slow 2s','3s slow','4s slow','5s slow','6s slow slow', 'insane speed']
       }
     ]
   },
@@ -1082,7 +1082,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[200,300,600,2200,4400, 40000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.3*level); },
-        desc:['+30%','+60%','+90%','+120%','+150% dmg','180% dmg']
+        desc:['+30% DMG','+60% DMG','+90% DMG','+120% DMG','+150% DMG','180% DMG']
       },
       { costs:[150,250,500,1800,3600,50000],
         apply:(tower,level)=>{ if(level<=6) tower.range += 10*level; },
@@ -1097,7 +1097,7 @@ const UPGRADE_DEFS = {
           if(level===5){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage+=10; }
           if(level===6) tower.fireRate*=0.3; 
         },
-        desc:['20% freeze 1s','35% 1.5s','50% 2s +dmg','65% 2.5s','80% 3s +dmg','godspeed']
+        desc:['20% freeze 1s','35% 1.5s freeze','50% 2s +dmg','65% 2.5s','80% 3s +dmg','godspeed']
       }
     ]
   },
@@ -1105,7 +1105,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[220,350,700,2500,5000,40000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.25*level); },
-        desc:['+25%','+50%','+75%','+100%','+125% dmg','+150% dmg']
+        desc:['+25% DMG','+50% DMG','+75% DMG','+100% DMG','+125% DMG','+150% DMG']
       },
       { costs:[180,300,600,2000,4000,60000],
         apply:(tower,level)=>{ if(level<=6) tower.range += 15*level; },
@@ -1120,22 +1120,22 @@ const UPGRADE_DEFS = {
           if(level===5){ tower.knockback+=30; tower.stun=true; }
           if(level===6) tower.knockback+=40;
         },
-        desc:['knock 20','35','50 +splash','70','100 +stun','knock+40']
+        desc:['knock 20','knock 35','50 +splash','knock 70','100 +stun','knock+40']
       }
     ]
   },
   hotdog: {
     paths: [
-      { costs:[300,500,1000,3500,9000,70000],
+      { costs:[300,500,2000,9000,24000,95000],
         apply:(tower,level)=>{ 
           if(level===1){ tower.productionBoost=1.5; }
-          if(level===2){ tower.productionBoost*=2; }
+          if(level===2){ tower.productionBoost*=4; tower.productionBoost/=3; }
           if(level===3){ tower.productionBoost*=2; }
-          if(level===4){ tower.productionBoost*=2; }
+          if(level===4){ tower.productionBoost*=3; }
           if(level===5){ tower.productionBoost*=2; }
-          if(level===6){ tower.productionBoost*=4}
+          if(level===6){ tower.productionBoost*=3}
         },
-        desc:['+50%','+100%','+100%','+100%','+100% money','+300% money']
+        desc:['+50% money','+33% money','+100% money','+200% money','+100% money','+200% money']
       },
       { costs:[250,400,800,2800,5600,40000],
         apply:(tower,level)=>{
@@ -1155,9 +1155,9 @@ const UPGRADE_DEFS = {
           if(level===3){ tower.ultraCollect=true; }
           if(level===4){ tower.autoCollect=true; }
           if(level===5){ tower.autoCollect=true; tower.collectRadius=70; } 
-          if(level===6){ tower.autoCollect=true; tower.collectRadius=500; tower.magnetic=true; } 
+          if(level===6){ tower.autoCollect=true; tower.collectRadius=2000; tower.magnetic=true; } 
         },
-        desc:['Easy pickup','Salvage','Easier Pickup','Auto collect','Nearby collect','Magnetic field']
+        desc:['+Collect Radius','Salvage for 50%','+Collect Radius','Auto collect','Collect nearby','Collect all']
       }
     ]
   },
@@ -1165,7 +1165,7 @@ const UPGRADE_DEFS = {
     paths: [
       { costs:[250,400,800,2800,6000,80000],
         apply:(tower,level)=>{ if(level<=6) tower.damage *= (1 + 0.3*level); },
-        desc:['+30%','+60%','+90%','+120%','+150% dmg','+180% dmg']
+        desc:['+30% DMG','+60% DMG','+90% DMG','+120% DMG','+150% DMG','+180% DMG']
       },
       { costs:[200,350,700,2400,4800,40000],
         apply:(tower,level)=>{ if(level<=6) tower.range += 10*level; },
@@ -1175,12 +1175,12 @@ const UPGRADE_DEFS = {
         apply:(tower,level)=>{
           if(level===1){ tower.chainLightning=true; tower.chainTargets=2; }
           if(level===2){ tower.chainTargets+=1; }
-          if(level===3){ tower.chainTargets+=1; tower.chainDamage=0.8; }
-          if(level===4){ tower.chainTargets+=1; tower.chainDamage+=0.2; }
-          if(level===5){ tower.chainTargets+=2; tower.chainDamage+=0.2; tower.lightningStorm=true; }
-          if(level===6){ tower.chainTargets+=10; tower.chainDamage+=0.8;}
+          if(level===3){ tower.chainTargets+=1; tower.chainDamage=2; }
+          if(level===4){ tower.chainTargets+=1; tower.chainDamage+=1; }
+          if(level===5){ tower.chainTargets+=2; tower.chainDamage+=1; tower.lightningStorm=true; }
+          if(level===6){ tower.chainTargets+=10; tower.chainDamage+=4;}
         },
-        desc:['chain 2','3 targets','4 +80%dmg','5 +100%dmg','7 +120%dmg','17 +200%dmg']
+        desc:['chain 2','3 targets','4 +100%dmg','5 +50%dmg','7 +33%dmg','17 +100%dmg']
       }
     ]
   }
@@ -2287,15 +2287,15 @@ startWaveBtn.addEventListener('click', ()=>{
       case 7: waveComposition = [{type:3, count:10}, {type:1, count:10}]; break;
       case 8: waveComposition = [{type:4, count:7}, {type:5, count:4}]; break;
       case 9: waveComposition = [{type:6, count:15}, {type:2, count:15}]; break;
-      case 10: waveComposition = [{type:6, count:15}, {type:5, count:10}, {type:3, count:15}]; break;
+      case 10: waveComposition = [{type:7, count:10}, {type:5, count:10}, {type:3, count:15}]; break;
       // Pattern continues for waves 11-200
       default:
         if(wave <= 50) {
           const baseType = Math.min(7, Math.floor(wave/7));
           waveComposition = [
             {type: baseType, count: 10 + wave * 2},
-            {type: Math.min(9, baseType + 1), count: 5 + wave/2},
-            {type: Math.min(9, baseType + 2), count: 3 + Math.floor(wave/3)}
+            {type: Math.min(9, baseType + 1), count: 5 + wave},
+            {type: Math.min(9, baseType + 2), count: 3 + Math.floor(wave/2)}
           ];
         } else if(wave <= 100) {
           waveComposition = [
@@ -2463,7 +2463,7 @@ ctx.fillText(`$${tw.invested}`, bx + pad + 240, by + 80);
 
   // draw 3 upgrade paths - MUCH BIGGER buttons
   const defs = UPGRADE_DEFS[tw.type];
-  const btnW = 110, btnH = 45, gap = 15;
+  const btnW = 110, btnH = 55, gap = 15;
   const startX = bx + pad;
   const startY = by + 130;
   
@@ -2561,23 +2561,24 @@ ctx.fillText(`$${tw.invested}`, bx + pad + 240, by + 80);
     
     // Upgrade label - center aligned with line breaks
     ctx.fillStyle = canAfford ? '#fff' : (cost ? '#ccc' : '#888');
-    ctx.font = "bold 11px sans-serif";
+    ctx.font = "bold 9px sans-serif";
     ctx.textAlign = 'center';
     
     const lines = label.split('\n');
     ctx.fillText(lines[0], bxBtn + btnW/2, byBtn + 16);
     if(lines[1]) {
-      ctx.font = "10px sans-serif";
+      ctx.font = "9px sans-serif";
       ctx.fillText(lines[1], bxBtn + btnW/2, byBtn + 30);
     }
     
     // Current level indicator
     ctx.font = "9px sans-serif";
     ctx.fillStyle = canAfford ? '#ffeb3b' : '#999';
-    ctx.fillText(`Level ${cur}/6`, bxBtn + btnW/2, byBtn + 40);
-    
+    ctx.fillText(`${UPGRADE_DEFS[tw.type]["paths"][p]["desc"][cur]}`, bxBtn + btnW/2, byBtn + 40);
+    ctx.font = "8px sans-serif";
+    ctx.fillText(`Level ${cur}/6`, bxBtn + btnW/2, byBtn + 50)
     ctx.textAlign = 'left';
-    
+
     // store button rect for clicks
     uiButtons.push({x:bxBtn, y:byBtn, w:btnW, h:btnH, type:'upgrade', path:p, cost:cost});
   }
@@ -2709,4 +2710,3 @@ document.addEventListener('keydown', e=>{
 </script>
 </body>
 </html>
-
