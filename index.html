@@ -76,6 +76,10 @@
           <div>🥪 Sandwich Tower (Chain Lightning)</div>
           <div style="margin-left:auto">Cost: <b>160</b></div>
         </div>
+        <div class="tower-card" data-type="whippedcream">
+          <div>🍦 Whipped Cream Tower (Targeting)</div>
+          <div style="margin-left:auto">Cost: <b>180</b></div>
+        </div>
     </div>
     <div class="hint">Click a tower above to pick it up, then click on a green square to place. You can place anytime. Select placed towers to upgrade/sell.</div>
     <div style="height:12px"></div>
@@ -421,7 +425,51 @@ function drawTowerGraphic(ctx, tower) {
       ctx.stroke();
       ctx.shadowBlur = 0;
       break;
-      
+      case 'whippedcream':
+  // Whipped cream canister
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - 12, y - 20, 24, 30);
+  
+  // Nozzle
+  ctx.fillStyle = '#cccccc';
+  ctx.fillRect(x - 4, y - 25, 8, 10);
+  
+  // Cream swirl on top
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(x, y - 30, 6, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Target reticle when selected
+  if(tower === selectedPlacedTower && tower.manualTarget) {
+    const tx = tower.manualTarget.x;
+    const ty = tower.manualTarget.y;
+    
+    // Draw targeting line
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw target reticle
+    ctx.strokeStyle = '#ffff00';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(tx, ty, 15, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(tx - 20, ty);
+    ctx.lineTo(tx + 20, ty);
+    ctx.moveTo(tx, ty - 20);
+    ctx.lineTo(tx, ty + 20);
+    ctx.stroke();
+  }
+  break;
     default:
       // Fallback to colored circle
       ctx.beginPath();
@@ -914,7 +962,17 @@ const BASE_TOWERS = {
     damage: 40,
     bulletSpeed: 9,
     color: '#ffff00'
-  }
+  },
+  whippedcream: {
+  name: "Whipped Cream Tower",
+  cost: 180,
+  attackType: 'targeting',
+  range: 1,
+  fireRate: 1.5,
+  damage: 40,
+  bulletSpeed: 15,
+  color: '#ffffff'
+}
 };
 const ENEMY_TYPES = [
   {name:'Broccoli', hp:1, speed:0.8, reward:7, color:'#2ecc71'}, 
@@ -949,7 +1007,7 @@ const UPGRADE_DEFS = {
           if(level===5) tower.damage *= 1.5;
           if(level===6) tower.damage *= 3;
         },
-        desc:['+50% DMG','+50% DMG','+40% DMG','+40% DMG','+50% dmg DMG', '+200% dmg DMG']
+        desc:['+50% DMG','+50% DMG','+40% DMG','+40% DMG','+50% DMG', '+200% DMG']
       },
       { costs:[150,300,700,2000,4000,40000],
         apply:(tower,level)=>{
@@ -1183,7 +1241,46 @@ const UPGRADE_DEFS = {
         desc:['chain 2','3 targets','4 +100%dmg','5 +50%dmg','7 +33%dmg','17 +100%dmg']
       }
     ]
-  }
+  }, whippedcream: {
+  paths: [
+    { // Top path - Lasers (fast, accurate, low damage)
+      costs: [200, 350, 2600, 9000, 25000, 100000],
+      apply: (tower, level) => {
+        if(level === 1) { tower.fireRate *= 0.5; tower.damage *= 0.8; }
+        if(level === 2) { tower.fireRate *= 0.6; tower.damage *= 0.9;}
+        if(level === 3) { tower.fireRate *= 0.6;  tower.laser = true;  }
+        if(level === 4) { tower.damage *= 1.5; }
+        if(level === 5) { tower.damage *= 1.5; }
+        if(level === 6) { tower.damage *= 3;}
+      },
+      desc: ['faster -20%dmg', 'faster -10% dmg', 'faster +laser', '+50% DMG', '+50% DMG', 'LASER STORM']
+    },
+    { // Middle path - Strong hits (slower, high damage)
+      costs: [220, 400, 4000, 8000, 18000, 80000],
+      apply: (tower, level) => {
+        if(level === 1) { tower.damage *= 2.0; tower.fireRate *= 1.2; }
+        if(level === 2) { tower.damage *= 1.8; tower.fireRate *= 1.2; }
+        if(level === 3) { tower.damage *= 2; tower.fireRate *= 1.2; tower.explosive = 2; }
+        if(level === 4) { tower.damage *= 1.9; tower.fireRate *= 1.2; tower.explosive = 3; }
+        if(level === 5) { tower.damage *= 2; tower.fireRate *= 1.2; tower.explosive = 4; }
+        if(level === 6) { tower.damage *= 3.0; tower.explosive = 8; }
+      },
+      desc: ['+100% DMG slower', '+80% DMG slower', '+100% DMG +explode', '+50% DMG', '+100% DMG', 'SUPER CANNON']
+    },
+    { // Bottom path - Broad range (wide spray)
+      costs: [180, 300, 700, 1800, 8000, 50000],
+      apply: (tower, level) => {
+        if(level === 1) { tower.slow=1; }
+        if(level === 2) {tower.slow=2;}
+        if(level === 3) { tower.wideSpray = 3; tower.damage*=1.3; tower.slow=3}
+        if(level === 4) { tower.wideSpray = 5; tower.damage*=1.5;}
+        if(level === 5) { tower.wideSpray = 12; tower.damage*=2; }
+        if(level === 6) { tower.wideSpray = 25; tower.damage*=3;}
+      },
+      desc: ['Slow ability', '+Slow', '3 streams +30%DMG', '5 streams +50%DMG', '12 streams', 'CREAM TSUNAMI']
+    }
+  ]
+}
 };
 // helper: compute upgrade cost
 function getUpgradeCost(tower, pathIndex){
@@ -1278,7 +1375,7 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 function update(dt){
-    if(lives <= 0) return;
+  if(lives <= 0) return;
   const scaledDt = dt * gameSpeed;
   
   // spawn wave chaining
@@ -1294,45 +1391,46 @@ function update(dt){
       }
     }
   }
-if (enemies.length!=0){
-  // update enemies
-  // update enemies
-for(let i=enemies.length-1;i>=0;i--){
-  const e = enemies[i];
-  
-  // Safety check - skip if enemy is invalid
-  if (!e || typeof e.speed === 'undefined') {
-    enemies.splice(i,1);
-    continue;
-  }
-  
-    // Apply status effects to movement
-  let actualSpeed = e.speed;
-    
-    if(e.frozen) {
-      actualSpeed = 0; // Completely frozen
-    } else if(e.stunned) {
-      actualSpeed = 0; // Completely stunned
-    } else if(e.slow && e.slow > 0) {
-      actualSpeed = e.speed * (1 - Math.min(e.slow, 0.9)); // Max 90% slow
+
+  if (enemies.length!=0){
+    // update enemies
+    for(let i=enemies.length-1;i>=0;i--){
+      const e = enemies[i];
+      
+      // Safety check - skip if enemy is invalid
+      if (!e || typeof e.speed === 'undefined') {
+        enemies.splice(i,1);
+        continue;
+      }
+      
+      // Apply status effects to movement
+      let actualSpeed = e.speed;
+        
+      if(e.frozen) {
+        actualSpeed = 0; // Completely frozen
+      } else if(e.stunned) {
+        actualSpeed = 0; // Completely stunned
+      } else if(e.slow && e.slow > 0) {
+        actualSpeed = e.speed * (1 - Math.min(e.slow, 0.9)); // Max 90% slow
+      }
+      
+      e.t += actualSpeed * scaledDt / (pathTotal/100);
+      if(e.t >= 1){
+        let lifeLoss = 1;
+        if(e.maxHP>=5000) lifeLoss =100;
+        else if(e.maxHp >= 1000) lifeLoss = 30;
+        else if(e.maxHp >= 500) lifeLoss = 20;
+        else if(e.maxHp >= 200) lifeLoss = 10;
+        else if(e.maxHp >= 100) lifeLoss = 5;
+        else if(e.maxHp >= 50) lifeLoss = 2;
+        enemies.splice(i,1);
+        lives -= lifeLoss;
+        updateUI();
+        if(lives<=0){ resetGame(); alert("You lost.")}
+      }
     }
-    
-    e.t += actualSpeed * scaledDt / (pathTotal/100);
-    if(e.t >= 1){
-      let lifeLoss = 1;
-      if(e.maxHP>=5000) lifeLoss =100;
-      else if(e.maxHp >= 1000) lifeLoss = 30;
-      else if(e.maxHp >= 500) lifeLoss = 20;
-      else if(e.maxHp >= 200) lifeLoss = 10;
-      else if(e.maxHp >= 100) lifeLoss = 5;
-      else if(e.maxHp >= 50) lifeLoss = 2;
-      enemies.splice(i,1);
-      lives -= lifeLoss;
-      updateUI();
-      if(lives<=0){ resetGame(); alert("You lost.")}
-    }
   }
-}
+
   if(!spawning && enemies.length === 0 && wave > 0) {
     // Calculate wave completion reward
     const baseReward = 50 + (wave * 10); // Base reward increases with wave
@@ -1347,160 +1445,257 @@ for(let i=enemies.length-1;i>=0;i--){
       updateUI();
     }
   }
- // towers attack
-for(const tw of towers){
-  // Safety check - skip if tower is invalid
-  if (!tw || typeof tw.cooldown === 'undefined') {
-    continue;
-  }
-  
-  tw.cooldown -= scaledDt;
-    if(tw.cooldown <= 0){
-        if(tw.attackType === 'money'&&(spawning||enemies.length!=0)){
-  // Generate money on ground near tower
-  tw.cooldown = tw.fireRate;
-  
-  // Calculate money amount
-  let moneyAmount = tw.moneyGen || 10; // Default to 15 if not defined
-  if(tw.productionBoost) moneyAmount *= tw.productionBoost;
-  
-  // Create ground money with boundary checking
-  const maxAttempts = 10;
-  let moneyX, moneyY, validPosition = false;
-  
-  for(let attempt = 0; attempt < maxAttempts; attempt++) {
-    moneyX = tw.x + (Math.random() - 0.5) * 60;
-    moneyY = tw.y + (Math.random() - 0.5) * 60;
-    
-    // Check if position is within canvas bounds
-    if(moneyX >= 20 && moneyX <= canvas.width - 20 && 
-       moneyY >= 20 && moneyY <= canvas.height - 20) {
-      validPosition = true;
-      break;
+
+  // towers attack
+  for(const tw of towers){
+    // Safety check - skip if tower is invalid
+    if (!tw || typeof tw.cooldown === 'undefined') {
+      continue;
     }
-  }
-  
-  // If no valid position found after attempts, place it at tower position
-  if(!validPosition) {
-    moneyX = tw.x;
-    moneyY = tw.y;
-  }
-  
-  const moneyDrop = {
-    x: moneyX,
-    y: moneyY,
-    amount: moneyAmount,
-    life: tw.moneyLifetime || 15,
-    maxLife: tw.moneyLifetime || 15,
-    owner: tw,
-    autoCollect: tw.autoCollect || false,
-    collected: false
-  };
-  groundMoney.push(moneyDrop);
-} 
-      const target = findTarget(tw.x, tw.y, tw.range,targets[tw.target]);
-      if(target){
+    
+    tw.cooldown -= scaledDt;
+    
+    if(tw.attackType === 'money' && (spawning || enemies.length != 0)){
+      // Generate money on ground near tower
+      tw.cooldown = tw.fireRate;
+      
+      // Calculate money amount
+      let moneyAmount = tw.moneyGen || 10; // Default to 15 if not defined
+      if(tw.productionBoost) moneyAmount *= tw.productionBoost;
+      
+      // Create ground money with boundary checking
+      const maxAttempts = 10;
+      let moneyX, moneyY, validPosition = false;
+      
+      for(let attempt = 0; attempt < maxAttempts; attempt++) {
+        moneyX = tw.x + (Math.random() - 0.5) * 60;
+        moneyY = tw.y + (Math.random() - 0.5) * 60;
+        
+        // Check if position is within canvas bounds
+        if(moneyX >= 20 && moneyX <= canvas.width - 20 && 
+           moneyY >= 20 && moneyY <= canvas.height - 20) {
+          validPosition = true;
+          break;
+        }
+      }
+      
+      // If no valid position found after attempts, place it at tower position
+      if(!validPosition) {
+        moneyX = tw.x;
+        moneyY = tw.y;
+      }
+      
+      const moneyDrop = {
+        x: moneyX,
+        y: moneyY,
+        amount: moneyAmount,
+        life: tw.moneyLifetime || 15,
+        maxLife: tw.moneyLifetime || 15,
+        owner: tw,
+        autoCollect: tw.autoCollect || false,
+        collected: false
+      };
+      groundMoney.push(moneyDrop);
+    } 
+    
+    // WHIPPED CREAM TOWER FIXED LOGIC
+    if(tw.attackType === 'targeting'){
+      tw.cooldown -= scaledDt;
+      if(tw.cooldown <= 0){
         tw.cooldown = tw.fireRate;
         
-        if(tw.attackType === 'projectile'){
-          bullets.push({
-            x: tw.x, y: tw.y,
-            tx: getEnemyPos(target.t).x, ty: getEnemyPos(target.t).y,
-            spd: tw.bulletSpeed, damage: tw.damage, color: tw.color,
-            owner: tw, pierce: tw.pierce||0, explosive: tw.explosive||0,
-            freeze: tw.freeze||false, freezeDuration: tw.freezeDuration||0, freezeDamage: tw.freezeDamage||0, freezeChance: tw.freezeChance||0,
-            knockback: tw.knockback||false, knockbackForce: tw.knockback||0, splashKnockback: tw.splashKnockback||false, stun: tw.stun||false,
-            armorPierce: tw.armorPierce||false, pierceAmount: tw.armorPierce||0, critical: tw.critical||0, trueDamage: tw.trueDamage||false,
-            chainLightning: tw.chainLightning||false, chainTargets: tw.chainTargets||0, chainDamage: tw.chainDamage||0.5, lightningStorm: tw.lightningStorm||false
-          });
-        } else if(tw.attackType === 'aoe'){
-          for(const e of enemies){
-            const pos = getEnemyPos(e.t);
-            if(pointDist({x:tw.x,y:tw.y}, pos) <= tw.range){
-              e.hp -= tw.damage;
-              tw.totalDamage += tw.damage;
-              
-              // Apply slow from microwave
-              if(tw.type === 'microwave' && tw.slow) {
-                e.slow = Math.max(e.slow || 0, tw.slow);
-                e.slowDuration = Math.max(e.slowDuration || 0, tw.slowDuration || 2);
-              }
-              
-              // Apply freeze from ice cream (chance-based)
-              if(tw.type === 'icecream' && tw.freeze && Math.random() < tw.freezeChance) {
-                e.frozen = true;
-                e.freezeDuration = tw.freezeDuration;
-                if(tw.freezeDamage > 0) {
-                  e.hp -= tw.freezeDamage;
-                  tw.totalDamage += tw.freezeDamage;
-                }
-              }
-              
-              // Apply knockback from donut
-              if(tw.type === 'donut' && tw.knockback && tw.knockback > 0) {
-                const knockbackDistance = tw.knockback / 100;
-                e.t -= knockbackDistance / (pathTotal/100);
-                e.t = Math.max(0, e.t);
+        // Find target based on targeting mode
+        let target = null;
+        if(tw.manualTarget) {
+          // Manual targeting - use the manually set position
+          target = { x: tw.manualTarget.x, y: tw.manualTarget.y };
+        }
+        
+        if(target) {
+          if(tw.laser) {
+            // Laser - instant hit to all enemies in line
+            const angle = Math.atan2(target.y - tw.y, target.x - tw.x);
+            const endX = tw.x + Math.cos(angle) * 2000; // Very long range
+            const endY = tw.y + Math.sin(angle) * 2000;
+            
+            for(const e of enemies) {
+              const pos = getEnemyPos(e.t);
+              const proj = projectPointOnSegment(pos, {x: tw.x, y: tw.y}, {x: endX, y: endY});
+              if(pointDist(pos, proj) < 15) {
+                e.hp -= tw.damage;
+                tw.totalDamage += tw.damage;
                 
-                if(tw.stun) {
-                  e.stunned = true;
-                  e.stunDuration = 1;
+                if(tw.slow) {
+                  e.slow = Math.max(e.slow || 0, tw.slow);
+                  e.slowDuration = 2;
                 }
-              }
-              
-              // Add animations
-              if(tw.type === 'fryer') {
-                attackAnimations.push({
-                  type: 'fryer',
-                  x: pos.x, y: pos.y,
-                  radius: 25,
-                  life: 0.3,
-                  maxLife: 0.3,
-                  color: '#ff4444'
-                });
-              } else if(tw.type === 'microwave') {
-                attackAnimations.push({
-                  type: 'microwave',
-                  x: tw.x, y: tw.y,
-                  startRadius: 10,
-                  endRadius: tw.range,
-                  progress: 0,
-                  maxProgress: 0.4,
-                  color: '#ffff00'
-                });
-              } else if(tw.type === 'icecream') {
-                attackAnimations.push({
-                  type: 'icecream',
-                  x: tw.x, y: tw.y,
-                  startRadius: 15,
-                  endRadius: tw.range,
-                  progress: 0,
-                  maxProgress: 0.6,
-                  color: '#87ceeb'
-                });
-              } else if(tw.type === 'donut') {
-                attackAnimations.push({
-                  type: 'donut',
-                  x: tw.x, y: tw.y,
-                  startRadius: 20,
-                  endRadius: tw.range,
-                  progress: 0,
-                  maxProgress: 0.5,
-                  color: '#ff69b4'
-                });
               }
             }
-          }
-          
-          if(tw.type === 'fryer') {
+            
+            // Laser animation
             attackAnimations.push({
-              type: 'fryer_center',
+              type: 'laser',
               x: tw.x, y: tw.y,
-              radius: 15,
-              life: 0.2,
-              maxLife: 0.2,
-              color: '#ff6600'
+              tx: endX, ty: endY,
+              life: 0.1,
+              maxLife: 0.1,
+              color: '#00ffff'
             });
+            
+          } else {
+            // Regular projectile attack
+            if(tw.wideSpray && tw.wideSpray > 1) {
+              // Multiple streams for wide spray
+              const streams = tw.wideSpray;
+              const spread = 0.2; // radians spread
+              const angle = Math.atan2(target.y - tw.y, target.x - tw.x);
+              
+              for(let i = 0; i < streams; i++) {
+                const streamAngle = angle + (i - (streams-1)/2) * (spread/streams);
+                const streamTx = tw.x + Math.cos(streamAngle) * 2000; // Very long range
+                const streamTy = tw.y + Math.sin(streamAngle) * 2000;
+                
+                bullets.push({
+                  x: tw.x, y: tw.y,
+                  tx: streamTx, ty: streamTy,
+                  spd: tw.bulletSpeed,
+                  damage: tw.damage,
+                  color: tw.color,
+                  owner: tw,
+                  pierce: tw.pierce || 0,
+                  explosive: tw.explosive || 0,
+                  slow: tw.slow || 0,
+                  slowDuration: 2
+                });
+              }
+            } else {
+              // Single stream
+              bullets.push({
+                x: tw.x, y: tw.y,
+                tx: target.x, ty: target.y,
+                spd: tw.bulletSpeed,
+                damage: tw.damage,
+                color: tw.color,
+                owner: tw,
+                pierce: tw.pierce || 0,
+                explosive: tw.explosive || 0,
+                slow: tw.slow || 0,
+                slowDuration: 2
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    // Regular tower attacks
+    if(tw.attackType !== 'targeting' && tw.attackType !== 'money') {
+      if(tw.cooldown <= 0){
+        const target = findTarget(tw.x, tw.y, tw.range, targets[tw.target]);
+        if(target){
+          tw.cooldown = tw.fireRate;
+          
+          if(tw.attackType === 'projectile'){
+            const targetPos = getEnemyPos(target.t);
+            bullets.push({
+              x: tw.x, y: tw.y,
+              tx: targetPos.x, ty: targetPos.y,
+              spd: tw.bulletSpeed, damage: tw.damage, color: tw.color,
+              owner: tw, pierce: tw.pierce||0, explosive: tw.explosive||0,
+              freeze: tw.freeze||false, freezeDuration: tw.freezeDuration||0, freezeDamage: tw.freezeDamage||0, freezeChance: tw.freezeChance||0,
+              knockback: tw.knockback||false, knockbackForce: tw.knockback||0, splashKnockback: tw.splashKnockback||false, stun: tw.stun||false,
+              armorPierce: tw.armorPierce||false, pierceAmount: tw.armorPierce||0, critical: tw.critical||0, trueDamage: tw.trueDamage||false,
+              chainLightning: tw.chainLightning||false, chainTargets: tw.chainTargets||0, chainDamage: tw.chainDamage||0.5, lightningStorm: tw.lightningStorm||false
+            });
+          } else if(tw.attackType === 'aoe'){
+            for(const e of enemies){
+              const pos = getEnemyPos(e.t);
+              if(pointDist({x:tw.x,y:tw.y}, pos) <= tw.range){
+                e.hp -= tw.damage;
+                tw.totalDamage += tw.damage;
+                
+                // Apply slow from microwave
+                if(tw.type === 'microwave' && tw.slow) {
+                  e.slow = Math.max(e.slow || 0, tw.slow);
+                  e.slowDuration = Math.max(e.slowDuration || 0, tw.slowDuration || 2);
+                }
+                
+                // Apply freeze from ice cream (chance-based)
+                if(tw.type === 'icecream' && tw.freeze && Math.random() < tw.freezeChance) {
+                  e.frozen = true;
+                  e.freezeDuration = tw.freezeDuration;
+                  if(tw.freezeDamage > 0) {
+                    e.hp -= tw.freezeDamage;
+                    tw.totalDamage += tw.freezeDamage;
+                  }
+                }
+                
+                // Apply knockback from donut
+                if(tw.type === 'donut' && tw.knockback && tw.knockback > 0) {
+                  const knockbackDistance = tw.knockback / 100;
+                  e.t -= knockbackDistance / (pathTotal/100);
+                  e.t = Math.max(0, e.t);
+                  
+                  if(tw.stun) {
+                    e.stunned = true;
+                    e.stunDuration = 1;
+                  }
+                }
+                
+                // Add animations
+                if(tw.type === 'fryer') {
+                  attackAnimations.push({
+                    type: 'fryer',
+                    x: pos.x, y: pos.y,
+                    radius: 25,
+                    life: 0.3,
+                    maxLife: 0.3,
+                    color: '#ff4444'
+                  });
+                } else if(tw.type === 'microwave') {
+                  attackAnimations.push({
+                    type: 'microwave',
+                    x: tw.x, y: tw.y,
+                    startRadius: 10,
+                    endRadius: tw.range,
+                    progress: 0,
+                    maxProgress: 0.4,
+                    color: '#ffff00'
+                  });
+                } else if(tw.type === 'icecream') {
+                  attackAnimations.push({
+                    type: 'icecream',
+                    x: tw.x, y: tw.y,
+                    startRadius: 15,
+                    endRadius: tw.range,
+                    progress: 0,
+                    maxProgress: 0.6,
+                    color: '#87ceeb'
+                  });
+                } else if(tw.type === 'donut') {
+                  attackAnimations.push({
+                    type: 'donut',
+                    x: tw.x, y: tw.y,
+                    startRadius: 20,
+                    endRadius: tw.range,
+                    progress: 0,
+                    maxProgress: 0.5,
+                    color: '#ff69b4'
+                  });
+                }
+              }
+            }
+            
+            if(tw.type === 'fryer') {
+              attackAnimations.push({
+                type: 'fryer_center',
+                x: tw.x, y: tw.y,
+                radius: 15,
+                life: 0.2,
+                maxLife: 0.2,
+                color: '#ff6600'
+              });
+            }
           }
         }
       }
@@ -1519,171 +1714,244 @@ for(const tw of towers){
     } else if(anim.type === 'lightning_storm'){
       anim.life -= scaledDt;
       if(anim.life <= 0) attackAnimations.splice(i,1);
+    } else if(anim.type === 'laser'){
+      anim.life -= scaledDt;
+      if(anim.life <= 0) attackAnimations.splice(i,1);
     }
   }
-  for(let i=bullets.length-1;i>=0;i--){
+
+    // Update bullets
+    for(let i=bullets.length-1;i>=0;i--){
     const b = bullets[i];
     const dx = b.tx - b.x, dy = b.ty - b.y;
     const d = Math.hypot(dx,dy);
     const step = b.spd * scaledDt * 60;
-    if(d <= step || d === 0){
-      let nearest=null, nd=Infinity;
-      for(const e of enemies){
+    
+    // Check if bullet is out of bounds (very far from tower)
+    const distanceFromTower = pointDist({x: b.x, y: b.y}, {x: canvas.width/2, y: canvas.height/2});
+    if(distanceFromTower > Math.max(canvas.width, canvas.height) * 1.5) {
+      bullets.splice(i,1);
+      continue;
+    }
+    
+    // FIX: For whipped cream wide spray, check collision along the entire path
+    if(b.owner && b.owner.type === 'whippedcream' && b.owner.wideSpray) {
+      let hitEnemies = [];
+      const bulletAngle = Math.atan2(b.ty - b.y, b.tx - b.x);
+      
+      // Check all enemies for collision with this bullet's path
+      for(const e of enemies) {
         const pos = getEnemyPos(e.t);
-        const dd = pointDist(pos, {x:b.tx,y:b.ty});
-        if(dd < nd){ nd = dd; nearest = e; }
+        const proj = projectPointOnSegment(pos, {x: b.x, y: b.y}, {x: b.tx, y: b.ty});
+        
+        // If enemy is close to the bullet's path and within reasonable distance
+        if(pointDist(pos, proj) < 25 && pointDist({x: b.x, y: b.y}, proj) <= d) {
+          hitEnemies.push(e);
+        }
       }
-      if(nearest){
-        // Calculate damage with armor piercing and critical hits
-        let damage = b.damage;
-        
-        // Armor piercing reduces enemy effective HP (ignores armor layers)
-        if(b.armorPierce) {
-          const armorReduction = Math.min(b.pierceAmount, 0.8); // Max 80% armor ignore
-          damage *= (1 + armorReduction);
-          // Special: armor pierce also ignores enemy damage reduction from upgrades
-          if(b.trueDamage) {
-            damage *= 1.5; // True damage bonus
+      
+      if(hitEnemies.length > 0) {
+        for(const enemy of hitEnemies) {
+          enemy.hp -= b.damage;
+          if(b.owner) b.owner.totalDamage += b.damage;
+          
+          // Apply slow effect if tower has it
+          if(b.slow && b.slow > 0) {
+            enemy.slow = Math.max(enemy.slow || 0, b.slow);
+            enemy.slowDuration = Math.max(enemy.slowDuration || 0, b.slowDuration || 2);
           }
         }
+        bullets.splice(i,1);
+        continue;
+      }
+    }
+    
+    if(d <= step || d === 0){
+      // Bullet reached target position or manual target
+      let hitEnemies = [];
+      
+      // For whipped cream towers with manual targeting, check all enemies in line
+      if(b.owner && b.owner.type === 'whippedcream' && b.owner.manualTarget) {
+        // Calculate line from tower to target
+        const angle = Math.atan2(b.ty - b.owner.y, b.tx - b.owner.x);
+        const lineLength = 2000; // Very long line
         
-        if(b.critical && Math.random() < b.critical) {
-          damage *= (2 + (b.trueDamage ? 0.5 : 0)); // Enhanced crit with true damage
-        }
-        
-        nearest.hp -= damage;
-        if(b.owner) b.owner.totalDamage += damage;
-        
-        // Apply freeze effect
-        if(b.freeze) {
-          nearest.frozen = true;
-          nearest.freezeDuration = b.freezeDuration;
-          if(b.freezeDamage > 0) {
-            nearest.hp -= b.freezeDamage;
-            if(b.owner) b.owner.totalDamage += b.freezeDamage;
+        for(const e of enemies) {
+          const pos = getEnemyPos(e.t);
+          const proj = projectPointOnSegment(pos, {x: b.owner.x, y: b.owner.y}, {
+            x: b.owner.x + Math.cos(angle) * lineLength,
+            y: b.owner.y + Math.sin(angle) * lineLength
+          });
+          
+          if(pointDist(pos, proj) < 20) { // Hit detection radius
+            hitEnemies.push(e);
           }
         }
-        
-        // Apply knockback effect
-        if(b.knockback && b.knockbackForce > 0) {
-          const knockbackPos = getEnemyPos(nearest.t);
-          const dx = knockbackPos.x - b.owner.x;
-          const dy = knockbackPos.y - b.owner.y;
-          const dist = Math.hypot(dx, dy);
-          if(dist > 0) {
-            const knockbackDistance = b.knockbackForce / 100;
-            nearest.t -= knockbackDistance / (pathTotal/100);
-            nearest.t = Math.max(0, nearest.t);
-            
-            if(b.stun) {
-              nearest.stunned = true;
-              nearest.stunDuration = 1;
+      } else {
+        // Regular bullet hit detection
+        let nearest=null, nd=Infinity;
+        for(const e of enemies){
+          const pos = getEnemyPos(e.t);
+          const dd = pointDist(pos, {x:b.tx,y:b.ty});
+          if(dd < nd){ nd = dd; nearest = e; }
+        }
+        if(nearest) hitEnemies.push(nearest);
+      }
+      
+      if(hitEnemies.length > 0) {
+        for(const enemy of hitEnemies) {
+          // Calculate damage with armor piercing and critical hits
+          let damage = b.damage;
+          
+          // Armor piercing reduces enemy effective HP (ignores armor layers)
+          if(b.armorPierce) {
+            const armorReduction = Math.min(b.pierceAmount, 0.8); // Max 80% armor ignore
+            damage *= (1 + armorReduction);
+            // Special: armor pierce also ignores enemy damage reduction from upgrades
+            if(b.trueDamage) {
+              damage *= 1.5; // True damage bonus
             }
-            
-            // Splash knockback to nearby enemies
-            if(b.splashKnockback) {
-              for(const e of enemies) {
-                if(e !== nearest) {
-                  const pos1 = getEnemyPos(nearest.t);
-                  const pos2 = getEnemyPos(e.t);
-                  const splashDist = pointDist(pos1, pos2);
-                  if(splashDist <= 40) {
-                    const splashKnockback = knockbackDistance * 0.5;
-                    e.t -= splashKnockback / (pathTotal/100);
-                    e.t = Math.max(0, e.t);
+          }
+          
+          if(b.critical && Math.random() < b.critical) {
+            damage *= (2 + (b.trueDamage ? 0.5 : 0)); // Enhanced crit with true damage
+          }
+          
+          enemy.hp -= damage;
+          if(b.owner) b.owner.totalDamage += damage;
+          
+          // Apply freeze effect
+          if(b.freeze) {
+            enemy.frozen = true;
+            enemy.freezeDuration = b.freezeDuration;
+            if(b.freezeDamage > 0) {
+              enemy.hp -= b.freezeDamage;
+              if(b.owner) b.owner.totalDamage += b.freezeDamage;
+            }
+          }
+          
+          // Apply knockback effect
+          if(b.knockback && b.knockbackForce > 0) {
+            const knockbackPos = getEnemyPos(enemy.t);
+            const dx = knockbackPos.x - b.owner.x;
+            const dy = knockbackPos.y - b.owner.y;
+            const dist = Math.hypot(dx, dy);
+            if(dist > 0) {
+              const knockbackDistance = b.knockbackForce / 100;
+              enemy.t -= knockbackDistance / (pathTotal/100);
+              enemy.t = Math.max(0, enemy.t);
+              
+              if(b.stun) {
+                enemy.stunned = true;
+                enemy.stunDuration = 1;
+              }
+              
+              // Splash knockback to nearby enemies
+              if(b.splashKnockback) {
+                for(const e of enemies) {
+                  if(e !== enemy) {
+                    const pos1 = getEnemyPos(enemy.t);
+                    const pos2 = getEnemyPos(e.t);
+                    const splashDist = pointDist(pos1, pos2);
+                    if(splashDist <= 40) {
+                      const splashKnockback = knockbackDistance * 0.5;
+                      e.t -= splashKnockback / (pathTotal/100);
+                      e.t = Math.max(0, e.t);
+                    }
                   }
                 }
               }
             }
           }
-        }
-        
-        // Apply chain lightning
-        if(b.chainLightning) {
-          const hitEnemies = [nearest];
-          let currentTarget = nearest;
           
-          for(let chain = 0; chain < b.chainTargets && hitEnemies.length < b.chainTargets + 1; chain++) {
-            let nextTarget = null;
-            let minDist = Infinity;
+          // Apply chain lightning
+          if(b.chainLightning) {
+            const hitEnemiesChain = [enemy];
+            let currentTarget = enemy;
             
-            for(const e of enemies) {
-              if(!hitEnemies.includes(e) && !e.frozen) {
-                const pos1 = getEnemyPos(currentTarget.t);
-                const pos2 = getEnemyPos(e.t);
-                const dist = pointDist(pos1, pos2);
-                if(dist < minDist && dist <= 80) {
-                  minDist = dist;
-                  nextTarget = e;
+            for(let chain = 0; chain < b.chainTargets && hitEnemiesChain.length < b.chainTargets + 1; chain++) {
+              let nextTarget = null;
+              let minDist = Infinity;
+              
+              for(const e of enemies) {
+                if(!hitEnemiesChain.includes(e) && !e.frozen) {
+                  const pos1 = getEnemyPos(currentTarget.t);
+                  const pos2 = getEnemyPos(e.t);
+                  const dist = pointDist(pos1, pos2);
+                  if(dist < minDist && dist <= 80) {
+                    minDist = dist;
+                    nextTarget = e;
+                  }
+                }
+              }
+              
+              if(nextTarget) {
+                const chainDamage = damage * b.chainDamage;
+                nextTarget.hp -= chainDamage;
+                if(b.owner) b.owner.totalDamage += chainDamage;
+                hitEnemiesChain.push(nextTarget);
+                currentTarget = nextTarget;
+                
+                // Lightning storm effect - creates additional lightning bolts
+                if(b.lightningStorm && Math.random() < 0.4) {
+                  // Create 2-3 additional lightning bolts to nearby enemies
+                  const nearbyEnemies = enemies.filter(enemy => {
+                    const pos1 = getEnemyPos(nextTarget.t);
+                    const pos2 = getEnemyPos(enemy.t);
+                    return enemy !== nextTarget && pointDist(pos1, pos2) <= 60;
+                  }).slice(0, 2);
+                  
+                  nearbyEnemies.forEach(enemy => {
+                    const stormDamage = damage * 0.6;
+                    enemy.hp -= stormDamage;
+                    if(b.owner) b.owner.totalDamage += stormDamage;
+                    
+                    // Add lightning storm animation
+                    attackAnimations.push({
+                      type: 'lightning_storm',
+                      x: getEnemyPos(enemy.t).x,
+                      y: getEnemyPos(enemy.t).y,
+                      radius: 15,
+                      life: 0.2,
+                      maxLife: 0.2,
+                      color: '#ffff00'
+                    });
+                  });
                 }
               }
             }
-            
-            if(nextTarget) {
-              const chainDamage = damage * b.chainDamage;
-              nextTarget.hp -= chainDamage;
-              if(b.owner) b.owner.totalDamage += chainDamage;
-              hitEnemies.push(nextTarget);
-              currentTarget = nextTarget;
-              
-              // Lightning storm effect - creates additional lightning bolts
-              if(b.lightningStorm && Math.random() < 0.4) {
-                // Create 2-3 additional lightning bolts to nearby enemies
-                const nearbyEnemies = enemies.filter(enemy => {
-                  const pos1 = getEnemyPos(nextTarget.t);
-                  const pos2 = getEnemyPos(enemy.t);
-                  return enemy !== nextTarget && pointDist(pos1, pos2) <= 60;
-                }).slice(0, 2);
-                
-                nearbyEnemies.forEach(enemy => {
-                  const stormDamage = damage * 0.6;
-                  enemy.hp -= stormDamage;
-                  if(b.owner) b.owner.totalDamage += stormDamage;
-                  
-                  // Add lightning storm animation
-                  attackAnimations.push({
-                    type: 'lightning_storm',
-                    x: getEnemyPos(enemy.t).x,
-                    y: getEnemyPos(enemy.t).y,
-                    radius: 15,
-                    life: 0.2,
-                    maxLife: 0.2,
-                    color: '#ffff00'
-                  });
-                });
-              }
+          }
+          
+          if(b.pierce && b.pierce>0){
+            let pierceLeft = b.pierce;
+            const list = enemies.slice().sort((a,b2)=> {
+              const da = pointDist(getEnemyPos(a.t), {x:b.tx,y:b.ty});
+              const db = pointDist(getEnemyPos(b2.t), {x:b.tx,y:b.ty});
+              return da-db;
+            });
+            for(const e of list){
+              if(pierceLeft<=0) break;
+              if(e===enemy) continue;
+              e.hp -= b.damage;
+              if(b.owner) b.owner.totalDamage += b.damage;
+              pierceLeft--;
             }
           }
-        }
-        
-        if(b.pierce && b.pierce>0){
-          let pierceLeft = b.pierce;
-          const list = enemies.slice().sort((a,b2)=> {
-            const da = pointDist(getEnemyPos(a.t), {x:b.tx,y:b.ty});
-            const db = pointDist(getEnemyPos(b2.t), {x:b.tx,y:b.ty});
-            return da-db;
-          });
-          for(const e of list){
-            if(pierceLeft<=0) break;
-            if(e===nearest) continue;
-            e.hp -= b.damage;
-            if(b.owner) b.owner.totalDamage += b.damage;
-            pierceLeft--;
-          }
-        }
-        
-        if(b.explosive){
-          for(const e of enemies){
-            const pos = getEnemyPos(e.t);
-            if(pointDist(pos, {x:b.tx,y:b.ty}) <= 40){
-              e.hp -= Math.round(b.damage*0.6);
-              if(b.owner) b.owner.totalDamage += Math.round(b.damage*0.6);
+          
+          if(b.explosive){
+            for(const e of enemies){
+              const pos = getEnemyPos(e.t);
+              if(pointDist(pos, {x:b.tx,y:b.ty}) <= 40){
+                e.hp -= Math.round(b.damage*0.6);
+                if(b.owner) b.owner.totalDamage += Math.round(b.damage*0.6);
+              }
             }
           }
         }
       }
       bullets.splice(i,1);
     } else {
+      // Move bullet toward target
       b.x += dx/d * step;
       b.y += dy/d * step;
     }
@@ -1691,39 +1959,39 @@ for(const tw of towers){
 
   // Update ground money
   for(let i=groundMoney.length-1;i>=0;i--){
-  const moneyDrop = groundMoney[i];
-  
-  // Auto collect if enabled (check all towers with auto collect)
-  if(!moneyDrop.collected) {
-    for(const tower of towers) {
-      if(tower.autoCollect && tower.type === 'hotdog') {
-        const dist = pointDist({x: tower.x, y: tower.y}, moneyDrop);
-        const radius = tower.collectRadius || 50;
-        
-        if(dist <= radius) {
-          money += moneyDrop.amount;
-          moneyDrop.collected = true;
-          groundMoney.splice(i,1);
-          updateUI();
-          break;
+    const moneyDrop = groundMoney[i];
+    
+    // Auto collect if enabled (check all towers with auto collect)
+    if(!moneyDrop.collected) {
+      for(const tower of towers) {
+        if(tower.autoCollect && tower.type === 'hotdog') {
+          const dist = pointDist({x: tower.x, y: tower.y}, moneyDrop);
+          const radius = tower.collectRadius || 50;
+          
+          if(dist <= radius) {
+            money += moneyDrop.amount;
+            moneyDrop.collected = true;
+            groundMoney.splice(i,1);
+            updateUI();
+            break;
+          }
         }
       }
+      if(moneyDrop.collected) continue;
     }
-    if(moneyDrop.collected) continue;
+    
+    // Money rot timer (not affected by game speed)
+    moneyDrop.life -= dt;
+    if(moneyDrop.life <= 0) {
+      if(moneyDrop.owner && moneyDrop.owner.quickCollect) {
+        const salvageAmount = Math.floor(moneyDrop.amount * 0.5);
+        money += salvageAmount;
+        flash(`Money salvaged: $${salvageAmount}`);
+        updateUI();
+      }
+      groundMoney.splice(i,1);
+    }
   }
-  
-  // Money rot timer (not affected by game speed)
-  moneyDrop.life -= dt;
-  if(moneyDrop.life <= 0) {
-    if(moneyDrop.owner && moneyDrop.owner.quickCollect) {
-            const salvageAmount = Math.floor(moneyDrop.amount * 0.5);
-            money += salvageAmount;
-            flash(`Money salvaged: $${salvageAmount}`);
-            updateUI();
-        }
-    groundMoney.splice(i,1);
-  }
-}
 
   // damage-over-time processing and status effects
   for(let i=enemies.length-1;i>=0;i--){
@@ -1773,7 +2041,7 @@ for(const tw of towers){
   // auto wave start when empty
   if(!spawning && enemies.length===0 && autoWave){
     setTimeout(function(){
-    startWaveBtn.click();
+      startWaveBtn.click();
     },50);
   }
 }
@@ -2081,7 +2349,27 @@ for(const anim of attackAnimations){
       ctx.arc(anim.x, anim.y, anim.radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
-  }
+  } else if(anim.type === 'laser'){
+  const alpha = anim.life / anim.maxLife;
+  ctx.strokeStyle = anim.color;
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(anim.x, anim.y);
+  ctx.lineTo(anim.tx, anim.ty);
+  ctx.stroke();
+  
+  // Glow effect
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.beginPath();
+  ctx.moveTo(anim.x, anim.y);
+  ctx.lineTo(anim.tx, anim.ty);
+  ctx.stroke();
+  
+  ctx.globalAlpha = 1;
+}
 }
 ctx.globalAlpha = 1;
   // enemies
@@ -2117,6 +2405,23 @@ function isTowerColliding(pos){
 }
 
 // ===== UI & Interaction =====
+canvas.addEventListener('contextmenu', e=>{
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width;
+    const scaleY = canvas.height / r.height;
+    const x = (e.clientX - r.left) * scaleX;
+    const y = (e.clientY - r.top) * scaleY;
+    
+    if(selectedPlacedTower && selectedPlacedTower.type === 'whippedcream') {
+      selectedPlacedTower.manualTarget = {x: x, y: y};
+      flash(`Target set to (${Math.round(x)}, ${Math.round(y)})`);
+      e.preventDefault();
+      return;
+    }
+    return;
+  return false;
+});
 canvas.addEventListener('mousemove', e=>{ 
   const r = canvas.getBoundingClientRect();
   const scaleX = canvas.width / r.width;
@@ -2128,6 +2433,7 @@ canvas.addEventListener('mousemove', e=>{
 });
 canvas.addEventListener('mouseleave', ()=> mousePos={x:-1000,y:-1000});
 canvas.addEventListener('click', e=>{
+  
   const r = canvas.getBoundingClientRect();
   const scaleX = canvas.width / r.width;
   const scaleY = canvas.height / r.height;
@@ -2223,6 +2529,7 @@ for(let i = groundMoney.length - 1; i >= 0; i--){
       chainLightning: false, chainTargets: 0, chainDamage: 0.5, lightningStorm: false,
       target: 0
     };
+
     towers.push(tw);
     selectedTowerType = null;
     updateUI();
@@ -2524,6 +2831,11 @@ ctx.fillText(`$${tw.invested}`, bx + pad + 240, by + 80);
           [`Extra Layer\n$${cost}`, `Double Layer\n$${cost}`, `Triple Layer\n$${cost}`, `Mega Stack\n$${cost}`, `90 Ingredients\n$${cost}`, `TOWER\n$${cost}`],
           [`Wider Bread\n$${cost}`, `Extended Bread\n$${cost}`, `Mega Bread\n$${cost}`, `Giant Bread\n$${cost}`, `Massive Bread\n$${cost}`, `CONTINENT\n$${cost}`],
           [`Static Shock\n$${cost}`, `Lightning\n$${cost}`, `Chain Bolt\n$${cost}`, `Storm Bolt\n$${cost}`, `Electrocuted\n$${cost}`, `APOCALYPSE\n$${cost}`]
+        ],
+        whippedcream: [
+          [`Fast Spray\n$${cost}`, `Faster Spray\n$${cost}`, `Laser Cream\n$${cost}`, `Loose Spraycaps\n$${cost}`, `Superspeed\n$${cost}`, `CREAM STORM\n$${cost}`],
+          [`Tough Cream\n$${cost}`, `Microscopic Spikes\n$${cost}`, `Condensed Spray\n$${cost}`, `Ultra Foamy\n$${cost}`, `Explosive Cream\n$${cost}`, `DESTRUCTION\n$${cost}`],
+          [`Sticky Cream\n$${cost}`, `Stickier Cream\n$${cost}`, `Larger Angle\n$${cost}`, `Cream Expulsion\n$${cost}`, `Cream Cloud\n$${cost}`, `WIDE\n$${cost}`]
         ]
       };
       label = pathNames[tw.type][p][cur];
