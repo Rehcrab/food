@@ -1128,7 +1128,7 @@ const UPGRADE_DEFS = {
           if(level===3){ tower.slow+=0.15; tower.slowDuration+=1; }
           if(level===4){ tower.slow+=0.15; tower.slowDuration+=1; }
           if(level===5){ tower.slow+=0.1; tower.slowDuration+=1; }
-          if(level===6) tower.fireRate*=0.3;
+          if(level===6) tower.fireRate*=0.5;
         },
         desc:['slow 2s','3s slow','4s slow','5s slow','6s slow slow', 'insane speed']
       }
@@ -1150,10 +1150,10 @@ const UPGRADE_DEFS = {
           if(level===2){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; }
           if(level===3){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage=10; }
           if(level===4){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage+=10; }
-          if(level===5){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage+=10; }
+          if(level===5){ tower.freezeDuration+=0.5; tower.freezeDamage+=10; }
           if(level===6) tower.fireRate*=0.5; 
         },
-        desc:['20% freeze 1s','35% 1.5s freeze','50% 2s +dmg','65% 2.5s','80% 3s +dmg','godspeed']
+        desc:['20% freeze 1s','35% 1.5s freeze','50% 2s +dmg','65% 2.5s','3s +dmg','godspeed']
       }
     ]
   },
