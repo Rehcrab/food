@@ -135,7 +135,7 @@ let spawning = false;
 let waveTimer = 0, spawnCount = 0, spawnInterval = 0.6, spawnType = 0;
 let autoWave = false;
 let gameSpeed = 1;
-const speedMultipliers = [1, 2, 4, 8, 16, 32];
+const speedMultipliers = [1, 2, 4, 8, 16];
 let currentSpeedIndex = 0;
 let waveCompletedThisRound = false;
 
@@ -763,7 +763,6 @@ function drawEnemyGraphic(ctx, enemy, x, y) {
       break;
       
     case 'speeddemon':
-      // Speed Demon - fast enemy
       ctx.fillStyle = '#ffff00';
       ctx.beginPath();
       ctx.arc(x, y, 14, 0, Math.PI * 2);
@@ -982,17 +981,16 @@ const ENEMY_TYPES = [
   {name:'Avocado', hp:100, speed:0.3, reward:15, color:'#27ae60'},
   {name:'Pumpkin', hp:150, speed:0.5, reward:18, color:'#d35400'},
   {name:'Watermelon', hp:200, speed:0.7, reward:10, color:'#c0392b'},
-  {name:'Eggplant', hp:1500, speed:0.6, reward:20, color:'#8e44ad'},
+  {name:'Eggplant', hp:1300, speed:0.3, reward:25, color:'#8e44ad'},
   {name:'Carrot', hp:700, speed:1.8, reward:9, color:'#e67e22'},
-  {name:'Cabbage', hp: 3000, speed:0.5, reward:25, color:'#1abc9c'}
+  {name:'Cabbage', hp: 3000, speed:0.5, reward:40, color:'#1abc9c'}
 ];
 
-// SUPER ENEMIES - Much stronger
 const SUPER_ENEMIES = [
   {name:'DRAGON FRUIT', hp:15000, speed:0.8, reward:100, color:'#ff00ff'},
-  {name:'GOD BROCCOLI', hp:8000, speed:2.0, reward:80, color:'#00ff00'},
+  {name:'GOD BROCCOLI', hp:8000, speed:1.5, reward:80, color:'#00ff00'},
   {name:'FINAL BOSS', hp:30000, speed:0.4, reward:200, color:'#000000'},
-  {name:'SPEED DEMON', hp:2000, speed:4, reward:50, color:'#ffff00'},
+  {name:'SPEED DEMON', hp:2000, speed:3, reward:50, color:'#ffff00'},
   {name:'TITAN', hp:50000, speed:0.15, reward:300, color:'#8B4513'}
 ];
 const UPGRADE_DEFS = {
@@ -1153,7 +1151,7 @@ const UPGRADE_DEFS = {
           if(level===3){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage=10; }
           if(level===4){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage+=10; }
           if(level===5){ tower.freezeDuration+=0.5; tower.freezeChance+=0.15; tower.freezeDamage+=10; }
-          if(level===6) tower.fireRate*=0.3; 
+          if(level===6) tower.fireRate*=0.5; 
         },
         desc:['20% freeze 1s','35% 1.5s freeze','50% 2s +dmg','65% 2.5s','80% 3s +dmg','godspeed']
       }
@@ -1188,23 +1186,23 @@ const UPGRADE_DEFS = {
         apply:(tower,level)=>{ 
           if(level===1){ tower.productionBoost=1.5; }
           if(level===2){ tower.productionBoost*=4; tower.productionBoost/=3; }
-          if(level===3){ tower.productionBoost*=2; }
-          if(level===4){ tower.productionBoost*=3; }
+          if(level===3){ tower.productionBoost*=1.5; }
+          if(level===4){ tower.productionBoost*=2; }
           if(level===5){ tower.productionBoost*=2; }
           if(level===6){ tower.productionBoost*=3}
         },
-        desc:['+50% money','+33% money','+100% money','+200% money','+100% money','+200% money']
+        desc:['+50% money','+33% money','+50% money','+100% money','+100% money','+200% money']
       },
-      { costs:[250,400,800,2800,5600,40000],
+      { costs:[250,400,800,2800,5600,60000],
         apply:(tower,level)=>{
           if(level===1){ tower.moneyLifetime=20; }
-          if(level===2){ tower.moneyLifetime=25; }
-          if(level===3){ tower.moneyLifetime=30; }
-          if(level===4){ tower.moneyLifetime=40; }
-          if(level===5){ tower.moneyLifetime=60; }
-          if(level===6){ tower.moneyLifetime=1000; }
+          if(level===2){ tower.moneyLifetime=25; fireRate*=0.75}
+          if(level===3){ tower.moneyLifetime=30; fireRate*=0.75}
+          if(level===4){ tower.moneyLifetime=40; fireRate*=0.5}
+          if(level===5){ tower.moneyLifetime=60; fireRate*=0.5}
+          if(level===6){ tower.moneyLifetime=6767;tower.productionBoost*=2}
         },
-        desc:['20s life','25s life','30s life','40s life','60s life','1000s life']
+        desc:['20s life','25s +speed','30s life','40s life','60s life','6767s life']
       },
       { costs:[400,600,1200,4000,15000,90000],
         apply:(tower,level)=>{
@@ -1213,9 +1211,9 @@ const UPGRADE_DEFS = {
           if(level===3){ tower.ultraCollect=true; }
           if(level===4){ tower.autoCollect=true; }
           if(level===5){ tower.autoCollect=true; tower.collectRadius=70; } 
-          if(level===6){ tower.autoCollect=true; tower.collectRadius=2000; tower.magnetic=true; } 
+          if(level===6){ tower.autoCollect=true; tower.collectRadius=200; tower.magnetic=true; } 
         },
-        desc:['+Collect Radius','Salvage for 50%','+Collect Radius','Auto collect','Collect nearby','Collect all']
+        desc:['+Collect Radius','Salvage for 50%','+Collect Radius','Auto collect','Collect nearby','Collect more']
       }
     ]
   },
@@ -1246,24 +1244,24 @@ const UPGRADE_DEFS = {
     { // Top path - Lasers (fast, accurate, low damage)
       costs: [200, 350, 2600, 9000, 25000, 100000],
       apply: (tower, level) => {
-        if(level === 1) { tower.fireRate *= 0.5; tower.damage *= 0.8; }
-        if(level === 2) { tower.fireRate *= 0.6; tower.damage *= 0.9;}
+        if(level === 1) { tower.fireRate *= 0.7; tower.damage *= 0.8; }
+        if(level === 2) { tower.fireRate *= 0.8; tower.damage *= 0.9;}
         if(level === 3) { tower.fireRate *= 0.6;  tower.laser = true;  }
-        if(level === 4) { tower.damage *= 1.5; }
+        if(level === 4) { tower.damage *= 1.5; tower.fireRate*=0.7}
         if(level === 5) { tower.damage *= 1.5; }
         if(level === 6) { tower.damage *= 3;}
       },
-      desc: ['faster -20%dmg', 'faster -10% dmg', 'faster +laser', '+50% DMG', '+50% DMG', 'LASER STORM']
+      desc: ['faster -20%dmg', 'faster -10% dmg', 'faster +laser', 'faster +50% DMG', '+50% DMG', 'LASER STORM']
     },
     { // Middle path - Strong hits (slower, high damage)
       costs: [220, 400, 4000, 8000, 18000, 80000],
       apply: (tower, level) => {
-        if(level === 1) { tower.damage *= 2.0; tower.fireRate *= 1.2; }
+        if(level === 1) { tower.damage *= 2; tower.fireRate *= 1.2; }
         if(level === 2) { tower.damage *= 1.8; tower.fireRate *= 1.2; }
-        if(level === 3) { tower.damage *= 2; tower.fireRate *= 1.2; tower.explosive = 2; }
-        if(level === 4) { tower.damage *= 1.9; tower.fireRate *= 1.2; tower.explosive = 3; }
-        if(level === 5) { tower.damage *= 2; tower.fireRate *= 1.2; tower.explosive = 4; }
-        if(level === 6) { tower.damage *= 3.0; tower.explosive = 8; }
+        if(level === 3) { tower.damage *= 2; tower.fireRate *= 1; tower.explosive = 2; }
+        if(level === 4) { tower.damage *= 1.5; tower.fireRate *= 1; tower.explosive = 3; }
+        if(level === 5) { tower.damage *= 2; tower.fireRate *= 1; tower.explosive = 4; }
+        if(level === 6) { tower.damage *= 3; tower.explosive = 8; }
       },
       desc: ['+100% DMG slower', '+80% DMG slower', '+100% DMG +explode', '+50% DMG', '+100% DMG', 'SUPER CANNON']
     },
@@ -1378,12 +1376,12 @@ function update(dt){
   if(lives <= 0) return;
   const scaledDt = dt * gameSpeed;
   
-  // spawn wave chaining
+  
   if(spawning){
     waveTimer -= scaledDt;
     if(waveTimer <= 0){
       if(spawnCount>0){
-        spawnEnemy(spawnType, wave);
+        
         spawnCount--;
         waveTimer = spawnInterval;
       } else {
@@ -1457,10 +1455,11 @@ function update(dt){
     
     if(tw.attackType === 'money' && (spawning || enemies.length != 0)){
       // Generate money on ground near tower
+      if (tw.cooldown<=0){
       tw.cooldown = tw.fireRate;
       
       // Calculate money amount
-      let moneyAmount = tw.moneyGen || 10; // Default to 15 if not defined
+      let moneyAmount = tw.moneyGen || 10; 
       if(tw.productionBoost) moneyAmount *= tw.productionBoost;
       
       // Create ground money with boundary checking
@@ -1497,7 +1496,7 @@ function update(dt){
       };
       groundMoney.push(moneyDrop);
     } 
-    
+  }
     // WHIPPED CREAM TOWER FIXED LOGIC
     if(tw.attackType === 'targeting'){
       tw.cooldown -= scaledDt;
@@ -1547,7 +1546,7 @@ function update(dt){
             if(tw.wideSpray && tw.wideSpray > 1) {
               // Multiple streams for wide spray
               const streams = tw.wideSpray;
-              const spread = 0.2; // radians spread
+              const spread = 0.6; // radians spread
               const angle = Math.atan2(target.y - tw.y, target.x - tw.x);
               
               for(let i = 0; i < streams; i++) {
@@ -1728,67 +1727,16 @@ function update(dt){
     const step = b.spd * scaledDt * 60;
     
     // Check if bullet is out of bounds (very far from tower)
-    const distanceFromTower = pointDist({x: b.x, y: b.y}, {x: canvas.width/2, y: canvas.height/2});
-    if(distanceFromTower > Math.max(canvas.width, canvas.height) * 1.5) {
-      bullets.splice(i,1);
-      continue;
-    }
+    const distanceFromTower = pointDist({x: b.x, y: b.y}, {x: b.owner.x, y: b.owner.y});
+if(distanceFromTower > 1500 || b.x <= -50 || b.x >= canvas.width+50 || b.y <= -50 || b.y >= canvas.height+50) {
+  bullets.splice(i,1);
+  continue;
+}
+   
     
-    // FIX: For whipped cream wide spray, check collision along the entire path
-    if(b.owner && b.owner.type === 'whippedcream' && b.owner.wideSpray) {
+    if(d <= step&&b.owner.type!="whippedcream"){
       let hitEnemies = [];
-      const bulletAngle = Math.atan2(b.ty - b.y, b.tx - b.x);
-      
-      // Check all enemies for collision with this bullet's path
-      for(const e of enemies) {
-        const pos = getEnemyPos(e.t);
-        const proj = projectPointOnSegment(pos, {x: b.x, y: b.y}, {x: b.tx, y: b.ty});
-        
-        // If enemy is close to the bullet's path and within reasonable distance
-        if(pointDist(pos, proj) < 25 && pointDist({x: b.x, y: b.y}, proj) <= d) {
-          hitEnemies.push(e);
-        }
-      }
-      
-      if(hitEnemies.length > 0) {
-        for(const enemy of hitEnemies) {
-          enemy.hp -= b.damage;
-          if(b.owner) b.owner.totalDamage += b.damage;
-          
-          // Apply slow effect if tower has it
-          if(b.slow && b.slow > 0) {
-            enemy.slow = Math.max(enemy.slow || 0, b.slow);
-            enemy.slowDuration = Math.max(enemy.slowDuration || 0, b.slowDuration || 2);
-          }
-        }
-        bullets.splice(i,1);
-        continue;
-      }
-    }
     
-    if(d <= step || d === 0){
-      // Bullet reached target position or manual target
-      let hitEnemies = [];
-      
-      // For whipped cream towers with manual targeting, check all enemies in line
-      if(b.owner && b.owner.type === 'whippedcream' && b.owner.manualTarget) {
-        // Calculate line from tower to target
-        const angle = Math.atan2(b.ty - b.owner.y, b.tx - b.owner.x);
-        const lineLength = 2000; // Very long line
-        
-        for(const e of enemies) {
-          const pos = getEnemyPos(e.t);
-          const proj = projectPointOnSegment(pos, {x: b.owner.x, y: b.owner.y}, {
-            x: b.owner.x + Math.cos(angle) * lineLength,
-            y: b.owner.y + Math.sin(angle) * lineLength
-          });
-          
-          if(pointDist(pos, proj) < 20) { // Hit detection radius
-            hitEnemies.push(e);
-          }
-        }
-      } else {
-        // Regular bullet hit detection
         let nearest=null, nd=Infinity;
         for(const e of enemies){
           const pos = getEnemyPos(e.t);
@@ -1796,7 +1744,6 @@ function update(dt){
           if(dd < nd){ nd = dd; nearest = e; }
         }
         if(nearest) hitEnemies.push(nearest);
-      }
       
       if(hitEnemies.length > 0) {
         for(const enemy of hitEnemies) {
@@ -1950,7 +1897,71 @@ function update(dt){
         }
       }
       bullets.splice(i,1);
-    } else {
+    }  else if (b.owner.type=="whippedcream"){
+  // Calculate direction from original position
+  if(!b.dirX || !b.dirY) {
+    // Store initial direction on first frame
+    const dist = Math.hypot(dx, dy);
+    b.dirX = dx / dist;
+    b.dirY = dy / dist;
+  }
+  
+  // Move bullet in the stored direction forever
+  b.x += b.dirX * step;
+  b.y += b.dirY * step;
+  
+  // Check collision with enemies
+  let hitEnemy = false;
+  for(const e of enemies){
+    const pos = getEnemyPos(e.t);
+    const dd = pointDist(pos, {x:b.x, y:b.y});
+    if(dd < 15){ // Collision radius
+      hitEnemy = true;
+      e.hp -= b.damage;
+      if(b.owner) b.owner.totalDamage += b.damage;
+      
+      // Apply pierce
+      if(b.pierce && b.pierce>0){
+        let pierceLeft = b.pierce;
+        const list = enemies.slice().sort((a,b2)=> {
+          const da = pointDist(getEnemyPos(a.t), {x:b.x,y:b.y});
+          const db = pointDist(getEnemyPos(b2.t), {x:b.x,y:b.y});
+          return da-db;
+        });
+        for(const e2 of list){
+          if(pierceLeft<=0) break;
+          if(e2===e) continue;
+          e2.hp -= b.damage;
+          if(b.owner) b.owner.totalDamage += b.damage;
+          pierceLeft--;
+        }
+      }
+      
+      // Apply slow effect
+      if(b.slow && b.slow > 0) {
+        e.slow = Math.max(e.slow || 0, b.slow);
+        e.slowDuration = Math.max(e.slowDuration || 0, b.slowDuration || 2);
+      }
+      
+      // Apply explosive
+      if(b.explosive){
+        for(const e3 of enemies){
+          const pos3 = getEnemyPos(e3.t);
+          if(pointDist(pos3, {x:b.x,y:b.y}) <= 40){
+            e3.hp -= Math.round(b.damage*0.6);
+            if(b.owner) b.owner.totalDamage += Math.round(b.damage*0.6);
+          }
+        }
+      }
+      
+      break; // Hit enemy, stop checking
+    }
+  }
+
+  if(hitEnemy) {
+    bullets.splice(i,1);
+  }
+  } else{
       // Move bullet toward target
       b.x += dx/d * step;
       b.y += dy/d * step;
@@ -2205,8 +2216,8 @@ ctx.fillText(`Cancel Refund: ${Math.floor(selectedTowerType.cost)}  ·  Sell (70
   }
   ctx.textAlign = 'start';
 
-  // bullets
-  // bullets with better effects
+  // draw bullets
+
 for(const b of bullets){
   // Glowing effect
   ctx.shadowColor = b.color || '#fff';
@@ -2406,7 +2417,7 @@ function isTowerColliding(pos){
 
 // ===== UI & Interaction =====
 canvas.addEventListener('contextmenu', e=>{
-  e.preventDefault();
+  //e.preventDefault();
   const r = canvas.getBoundingClientRect();
     const scaleX = canvas.width / r.width;
     const scaleY = canvas.height / r.height;
@@ -2585,16 +2596,16 @@ startWaveBtn.addEventListener('click', ()=>{
   if(wave <= 200) {
     // Manual wave design for levels 1-200
     switch(wave) {
-      case 1: waveComposition = [{type:0, count:10}]; break;
-      case 2: waveComposition = [{type:0, count:15}]; break;
-      case 3: waveComposition = [{type:1, count:12}]; break;
-      case 4: waveComposition = [{type:0, count:25}]; break;
-      case 5: waveComposition = [{type:1, count:20}]; break;
-      case 6: waveComposition = [{type:2, count:10}, {type:4, count:2}]; break;
-      case 7: waveComposition = [{type:3, count:10}, {type:1, count:10}]; break;
-      case 8: waveComposition = [{type:4, count:7}, {type:5, count:4}]; break;
-      case 9: waveComposition = [{type:6, count:15}, {type:2, count:15}]; break;
-      case 10: waveComposition = [{type:7, count:10}, {type:5, count:10}, {type:3, count:15}]; break;
+      case 1: waveComposition = [{type:0, count:10},0.5]; break;
+      case 2: waveComposition = [{type:0, count:15},0.5]; break;
+      case 3: waveComposition = [{type:1, count:12},0.5]; break;
+      case 4: waveComposition = [{type:0, count:25},0.5]; break;
+      case 5: waveComposition = [{type:1, count:20},0.4]; break;
+      case 6: waveComposition = [{type:2, count:10}, {type:4, count:2},0.5]; break;
+      case 7: waveComposition = [{type:3, count:10}, {type:1, count:10},0.3]; break;
+      case 8: waveComposition = [{type:4, count:7}, {type:5, count:4},0.4]; break;
+      case 9: waveComposition = [{type:6, count:15}, {type:2, count:15},0.5]; break;
+      case 10: waveComposition = [{type:7, count:10}, {type:5, count:10}, {type:3, count:15},0.5]; break;
       // Pattern continues for waves 11-200
       default:
         if(wave <= 50) {
@@ -2603,80 +2614,104 @@ startWaveBtn.addEventListener('click', ()=>{
             {type: baseType, count: 10 + wave * 2},
             {type: Math.min(9, baseType + 1), count: 5 + wave},
             {type: Math.min(9, baseType + 2), count: 3 + Math.floor(wave/2)}
+            ,0.3
           ];
         } else if(wave <= 100) {
           waveComposition = [
             {type: 8, count: 20 + (wave-50) * 3},
             {type: 9, count: 10 + (wave-50) * 2},
-            {type: 7, count: 15 + (wave-50)}
+            {type: 7, count: 15 + (wave-50)},0.3
           ];
         } else if(wave <= 150) {
           // Mix in super enemies
           waveComposition = [
             {type: 9, count: 30 + (wave-100) * 4},
             {type: 8, count: 20 + (wave-100) * 3},
-            {type: 0, count: 50} // Swarm of fast weak enemies
+            {type: 0, count: 50},0.2// Swarm of fast weak enemies
           ];
         } else if(wave <= 200) {
           // More super enemies
           waveComposition = [
             {type: 9, count: 50 + (wave-150) * 5},
             {type: 8, count: 30 + (wave-150) * 3},
-            {type: 3, count: 40 + (wave-150) * 2}
+            {type: 3, count: 40 + (wave-150) * 2},0.2
           ];
         }
     }
   } else {
-    // After wave 200: random selection
-    const strongTypes = [8, 9]; // Strongest normal enemies
-    const fastTypes = [0, 3, 6]; // Fastest enemies
+    const strongTypes = [8, 9];
+    const fastTypes = [0, 3, 6]; 
     waveComposition = [
       {type: strongTypes[Math.floor(Math.random() * strongTypes.length)], count: 100 + wave * 2},
       {type: fastTypes[Math.floor(Math.random() * fastTypes.length)], count: 50 + wave},
       {type: Math.random() > 0.5 ? 8 : 9, count: 30 + Math.floor(wave/2)}
     ];
-    
-    // Occasionally add super enemies after wave 200
-    if(wave > 200 && Math.random() < 0.3) {
-      waveComposition.push({type: 10 + Math.floor(Math.random() * 5), count: 1 + Math.floor(wave/100)});
+    if(wave > 200 && Math.random() < 0.5) {
+      waveComposition.push({type: 10 + Math.floor(Math.random() * 5), count: 2 + Math.floor((wave-200)/50)});
     }
+    waveComposition.push(0.15);
   }
   
   // Start spawning the wave
   startWaveComposition(waveComposition);
 });
-
 function startWaveComposition(composition) {
+  let spawnTime = composition.pop();
+  spawnInterval = spawnTime;
   spawning = true;
-  spawnCount = 0;
+  waveTimer = 0;
   clearAllSpawnTimeouts();
   
+  // Calculate total spawn count
+  spawnCount = 0;
   composition.forEach(group => {
     spawnCount += group.count;
-    // Add to spawn queue
+  });
+  
+  // Create spawn queue
+  let spawnQueue = [];
+  composition.forEach(group => {
     for(let i = 0; i < group.count; i++) {
-      const timeout = setTimeout(() => {
-        if(!spawning) return;
-        
-        if(wave <= 200) {
-          spawnEnemy(group.type, wave);
-        } else {
-          if(group.type >= 10) {
-            const superType = group.type - 10;
-            const base = SUPER_ENEMIES[superType];
-            const hp = Math.round(base.hp * (1 + (wave-200)*0.05));
-            enemies.push({t:0, hp:hp, maxHp:hp, speed:base.speed, reward:base.reward, color:base.color, slow: 0});
-          } else {
-            spawnEnemy(group.type, wave);
-          }
-        }
-      }, i * spawnInterval * 1000);
-      
-      spawnTimeouts.push(timeout);
+      spawnQueue.push(group.type);
     }
   });
-  spawnInterval = 0.5;
-  waveTimer = 0.5;
+  
+  // Spawn enemies at intervals
+  let spawnIndex = 0;
+  function spawnNext() {
+    if(spawnIndex >= spawnQueue.length) {
+      spawning = false;
+      spawnCount = 0;
+      return;
+    }
+    
+    const enemyType = spawnQueue[spawnIndex];
+    if(wave <= 200) {
+      spawnEnemy(enemyType, wave);
+    } else {
+      if(enemyType >= 10) {
+        const superType = enemyType - 10;
+        const base = SUPER_ENEMIES[superType];
+        const hp = Math.round(base.hp * (1 + (wave-200)*0.05));
+        enemies.push({t:0, hp:hp, maxHp:hp, speed:base.speed, reward:base.reward, color:base.color, slow: 0});
+      } else {
+        spawnEnemy(enemyType, wave);
+      }
+    }
+    
+    spawnIndex++;
+    spawnCount--;
+    
+    if(spawnIndex < spawnQueue.length) {
+      const timeout = setTimeout(spawnNext, 1/gameSpeed*spawnTime * 1000);
+      spawnTimeouts.push(timeout);
+    } else {
+      spawning = false;
+      spawnCount = 0;
+    }
+  }
+  
+  spawnNext();
 }
 // auto wave toggle
 autoWaveBtn.addEventListener('click', ()=>{ autoWave = !autoWave; autoWaveBtn.textContent = 'Auto: ' + (autoWave? 'ON':'OFF'); });
